@@ -1,0 +1,16 @@
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import weekofyear,count
+from pyspark.sql.types import DateType
+
+spark=SparkSession.builder.master('local[*]').appName('Abhishek').getOrCreate()
+
+df1=(spark.read.
+     option('header','true').
+     option('inferSchema','true').
+     csv("/c:/Users/habhi/OneDrive/Desktop/Daily_Study/orders_analysis.csv"))
+
+df2=df1.filter((df1["week"].between("2023-01-01","2023-03-31")))
+df3=df2.withColumn("week1",weekofyear(df2["week"])).drop("week")
+df3.withColumnRenamed("week1","week")\
+    .groupby("week").agg(count("week").alias("quantity"))\
+    .select("week","quantity").orderBy("week").show(truncate=False)
